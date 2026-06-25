@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ishtha Ethanol Plant — Management Playbook</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #0a0e1a;
+  --bg2: #0f1526;
+  --bg3: #151d30;
+  --bg4: #1a2438;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #e8eaf0;
+  --text2: #8892a4;
+  --text3: #4a5568;
+  --green: #00d68f;
+  --green2: #00b87a;
+  --amber: #f6b93b;
+  --amber2: #e0a420;
+  --red: #ff5252;
+  --blue: #4fc3f7;
+  --purple: #b39ddb;
+  --teal: #4db6ac;
+  --g1: linear-gradient(135deg,#00d68f,#00b0ff);
+  --g2: linear-gradient(135deg,#f6b93b,#ff6f00);
+  --g3: linear-gradient(135deg,#ff5252,#e040fb);
+  --g4: linear-gradient(135deg,#4fc3f7,#7c4dff);
+  --g5: linear-gradient(135deg,#69f0ae,#00bcd4);
+  --gcard: linear-gradient(160deg,#151d30 0%,#0f1526 100%);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ANIMATED BG */
+.bg-glow{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden}
+.bg-glow::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(0,214,143,0.07) 0%,transparent 70%);top:-100px;right:-100px;animation:drift1 12s ease-in-out infinite}
+.bg-glow::after{content:'';position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(79,195,247,0.05) 0%,transparent 70%);bottom:-50px;left:-50px;animation:drift2 15s ease-in-out infinite}
+@keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,30px)}}
+@keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-40px)}}
+
+/* LAYOUT */
+.wrapper{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:24px 20px}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}
+.header-left{}
+.brand{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:4px}
+.title{font-size:26px;font-weight:800;background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2}
+.subtitle{font-size:13px;color:var(--text2);margin-top:4px}
+.live-badge{display:flex;align-items:center;gap:6px;background:rgba(0,214,143,0.1);border:1px solid rgba(0,214,143,0.25);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:500;color:var(--green)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 1.6s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--green)}50%{opacity:.3;box-shadow:none}}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:5px;margin-bottom:28px;overflow-x:auto}
+.tab-btn{flex:1;min-width:100px;padding:10px 18px;border-radius:10px;border:none;background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:'Inter',sans-serif}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,0.05)}
+.tab-btn.active{background:linear-gradient(135deg,rgba(0,214,143,0.2),rgba(79,195,247,0.15));color:#fff;border:1px solid rgba(0,214,143,0.3)}
+.panel{display:none}.panel.active{display:block}
+
+/* METRIC CARDS */
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.metric-card{background:var(--gcard);border:1px solid var(--border);border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
+.metric-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.mc-green::before{background:var(--g1)}
+.mc-amber::before{background:var(--g2)}
+.mc-red::before{background:var(--g3)}
+.mc-blue::before{background:var(--g4)}
+.mc-teal::before{background:var(--g5)}
+.metric-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:8px}
+.metric-val{font-size:32px;font-weight:800;line-height:1;margin-bottom:4px}
+.mv-green{background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.mv-amber{background:var(--g2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.mv-blue{background:var(--g4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.metric-unit{font-size:13px;color:var(--text2);font-weight:400}
+.metric-delta{font-size:12px;margin-top:8px;display:flex;align-items:center;gap:4px}
+.delta-up{color:var(--green)}.delta-dn{color:var(--red)}.delta-neutral{color:var(--text2)}
+.metric-icon{position:absolute;right:16px;top:16px;font-size:28px;opacity:.15}
+
+/* CHARTS ROW */
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:700px){.charts-row{grid-template-columns:1fr}}
+.chart-card{background:var(--gcard);border:1px solid var(--border);border-radius:16px;padding:20px}
+.chart-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.chart-sub{font-size:11px;color:var(--text2);margin-bottom:16px}
+.chart-wrap{position:relative;height:180px}
+
+/* EQUIPMENT GRID */
+.eq-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:24px}
+.eq-card{background:var(--gcard);border:1px solid var(--border);border-radius:14px;padding:16px;transition:border-color .2s}
+.eq-card:hover{border-color:var(--border2)}
+.eq-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.eq-name{font-size:13px;font-weight:600;color:var(--text);line-height:1.3}
+.eq-tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:.05em}
+.tag-ok{background:rgba(0,214,143,0.15);color:var(--green)}
+.tag-warn{background:rgba(246,185,59,0.15);color:var(--amber)}
+.tag-dn{background:rgba(255,82,82,0.15);color:var(--red)}
+.eq-bars{display:flex;flex-direction:column;gap:6px}
+.eq-bar-row{display:flex;align-items:center;gap:8px}
+.eq-bar-label{font-size:11px;color:var(--text2);min-width:55px}
+.eq-bar-track{flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.eq-bar-fill{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.fill-g{background:var(--g1)}.fill-a{background:var(--g2)}.fill-r{background:var(--g3)}.fill-b{background:var(--g4)}
+.eq-bar-val{font-size:11px;font-weight:500;min-width:36px;text-align:right;font-family:'JetBrains Mono',monospace}
+
+/* BY-PRODUCTS */
+.byp-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:600px){.byp-row{grid-template-columns:1fr}}
+.byp-card{background:var(--gcard);border:1px solid var(--border);border-radius:16px;padding:20px;position:relative;overflow:hidden}
+.byp-card::after{content:'';position:absolute;bottom:-30px;right:-30px;width:120px;height:120px;border-radius:50%;opacity:.06}
+.byp-co2::after{background:var(--blue)}
+.byp-ddgs::after{background:var(--amber)}
+.byp-icon{font-size:32px;margin-bottom:10px}
+.byp-name{font-size:14px;font-weight:700;margin-bottom:14px;background:var(--g4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.byp-ddgs .byp-name{background:var(--g2);-webkit-background-clip:text;background-clip:text}
+.byp-stat-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.byp-stat-row:last-child{border:none}
+.byp-stat-label{color:var(--text2)}
+.byp-stat-val{font-weight:600;font-family:'JetBrains Mono',monospace}
+
+/* TASK TRACKER */
+.tracker-wrap{background:var(--gcard);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:24px}
+.tracker-head{display:grid;grid-template-columns:2.5fr 1fr 80px 90px;padding:12px 20px;background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text2)}
+.tracker-row{display:grid;grid-template-columns:2.5fr 1fr 80px 90px;padding:12px 20px;border-bottom:1px solid var(--border);align-items:center;transition:background .15s;font-size:13px}
+.tracker-row:last-child{border:none}
+.tracker-row:hover{background:rgba(255,255,255,0.03)}
+.tstat{display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.s-done{background:rgba(0,214,143,0.15);color:var(--green)}
+.s-pend{background:rgba(246,185,59,0.15);color:var(--amber)}
+.s-over{background:rgba(255,82,82,0.15);color:var(--red)}
+.task-name{font-weight:500}
+.task-dept{color:var(--text2);font-size:12px}
+.task-time{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2)}
+
+/* ORG CHART */
+.org-container{overflow-x:auto;padding:10px 0 20px}
+.org-tree{display:flex;flex-direction:column;align-items:center;gap:0;min-width:700px}
+.org-row{display:flex;gap:10px;justify-content:center;position:relative}
+.org-connector{width:1px;height:20px;background:linear-gradient(to bottom,rgba(0,214,143,0.4),rgba(0,214,143,0.1));margin:0 auto}
+.org-hline{height:1px;background:rgba(0,214,143,0.15);margin:0 auto;align-self:center}
+.org-box{border:1px solid var(--border);border-radius:12px;padding:12px 14px;text-align:center;cursor:pointer;transition:all .2s;min-width:110px;max-width:145px;position:relative;overflow:hidden;background:var(--bg3)}
+.org-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.org-box:hover{transform:translateY(-2px);border-color:rgba(0,214,143,0.4)}
+.ob-md{background:linear-gradient(160deg,rgba(0,214,143,0.15),rgba(0,176,255,0.1));border-color:rgba(0,214,143,0.35) !important}
+.ob-md::before{background:var(--g1)}
+.ob-ops::before{background:var(--g4)}
+.ob-fin::before{background:var(--g2)}
+.ob-adm::before{background:linear-gradient(135deg,#b39ddb,#7c4dff)}
+.ob-eng::before{background:var(--g5)}
+.ob-l3::before{background:linear-gradient(135deg,rgba(255,255,255,0.2),rgba(255,255,255,0.05))}
+.org-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.3}
+.org-sub{font-size:10px;color:var(--text2);margin-top:3px;line-height:1.3}
+.org-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;margin-top:5px;text-transform:uppercase;letter-spacing:.05em}
+.badge-you{background:rgba(0,214,143,0.2);color:var(--green)}
+.badge-ops{background:rgba(79,195,247,0.15);color:var(--blue)}
+.badge-fin{background:rgba(246,185,59,0.15);color:var(--amber)}
+.badge-adm{background:rgba(179,157,219,0.2);color:var(--purple)}
+
+/* SOP SECTION */
+.sop-dept{margin-bottom:12px}
+.dept-hdr{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all .2s}
+.dept-hdr:hover{border-color:var(--border2);background:var(--bg4)}
+.dept-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dept-label{font-size:13px;font-weight:600;flex:1}
+.dept-count{font-size:11px;color:var(--text3);background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:8px}
+.dept-arrow{color:var(--text3);font-size:12px;transition:transform .2s}
+.dept-arrow.open{transform:rotate(180deg)}
+.dept-body{display:none;padding:10px 0 4px 10px}
+.dept-body.open{display:block}
+.role-card{background:var(--gcard);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.role-hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;transition:background .15s}
+.role-hdr:hover{background:rgba(255,255,255,0.04)}
+.role-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.role-name{font-size:13px;font-weight:500;flex:1}
+.role-body{display:none;padding:0 16px 14px}
+.role-body.open{display:block}
+.kpi-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.kpi-box{background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 12px;border:1px solid var(--border)}
+.kpi-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:3px}
+.kpi-v{font-size:14px;font-weight:700;color:var(--green)}
+.task-list{list-style:none}
+.task-list li{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:12px;color:var(--text2);line-height:1.5}
+.task-list li:last-child{border:none}
+.task-list li::before{content:'→';color:var(--green);flex-shrink:0;font-size:11px;margin-top:1px}
+.task-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);flex-shrink:0;margin-top:2px;min-width:40px}
+
+/* TECH BLUEPRINT */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:24px}
+.tech-card{background:var(--gcard);border:1px solid var(--border);border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:all .2s}
+.tech-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.tech-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.tc-scada::before{background:var(--g4)}
+.tc-iot::before{background:var(--g1)}
+.tc-ai::before{background:var(--g2)}
+.tc-task::before{background:linear-gradient(135deg,#b39ddb,#7c4dff)}
+.tc-cmms::before{background:var(--g3)}
+.tech-icon-wrap{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
+.tw-blue{background:rgba(79,195,247,0.15)}
+.tw-green{background:rgba(0,214,143,0.15)}
+.tw-amber{background:rgba(246,185,59,0.15)}
+.tw-purple{background:rgba(179,157,219,0.2)}
+.tw-red{background:rgba(255,82,82,0.15)}
+.tech-name{font-size:14px;font-weight:700;margin-bottom:6px;color:var(--text)}
+.tech-desc{font-size:12px;color:var(--text2);line-height:1.7}
+.tech-tag{display:inline-block;font-size:10px;font-weight:600;padding:3px 8px;border-radius:8px;margin-top:10px;border:1px solid var(--border2);color:var(--text2)}
+
+/* MD REPORT */
+.md-report{background:var(--bg3);border:1px solid rgba(0,214,143,0.25);border-radius:14px;padding:18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2;color:var(--text2)}
+.md-report .rg{color:var(--green)}.md-report .ra{color:var(--amber)}.md-report .rr{color:var(--red)}.md-report .rb{color:var(--blue)}
+
+/* SECTION LABEL */
+.sec-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="brand">Ishtha Industrial · Ethanol Plant</div>
+      <div class="title">Management Playbook</div>
+      <div class="subtitle">50–100 KLPD · Grain-Based · Full Operations Framework</div>
+    </div>
+    <div class="live-badge"><span class="live-dot"></span>SCADA Live · Updated 5:31 PM</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('dash')">📊 Dashboard</button>
+    <button class="tab-btn" onclick="showTab('org')">🏢 Org Chart</button>
+    <button class="tab-btn" onclick="showTab('sop')">📋 Daily SOPs</button>
+    <button class="tab-btn" onclick="showTab('tech')">⚡ Tech Stack</button>
+  </div>
+
+  <!-- ======= DASHBOARD PANEL ======= -->
+  <div class="panel active" id="panel-dash">
+
+    <!-- TOP METRICS -->
+    <div class="metrics-grid">
+      <div class="metric-card mc-green">
+        <div class="metric-icon">⚗️</div>
+        <div class="metric-label">Today's Production</div>
+        <div class="metric-val mv-green">72.4 <span class="metric-unit">KL</span></div>
+        <div class="metric-delta delta-up">▲ +2.1 KL vs yesterday</div>
+      </div>
+      <div class="metric-card mc-blue">
+        <div class="metric-icon">📈</div>
+        <div class="metric-label">Capacity Utilisation</div>
+        <div class="metric-val mv-blue">82 <span class="metric-unit">%</span></div>
+        <div class="metric-delta delta-neutral">Target: ≥90% · Gap: 8%</div>
+      </div>
+      <div class="metric-card mc-green">
+        <div class="metric-icon">🧪</div>
+        <div class="metric-label">Ethanol Purity</div>
+        <div class="metric-val mv-green">99.7 <span class="metric-unit">%</span></div>
+        <div class="metric-delta delta-up">✓ ENA spec met</div>
+      </div>
+      <div class="metric-card mc-amber">
+        <div class="metric-icon">🌾</div>
+        <div class="metric-label">Feedstock Stock</div>
+        <div class="metric-val mv-amber">9.2 <span class="metric-unit">days</span></div>
+        <div class="metric-delta delta-neutral">Reorder PO raised ✓</div>
+      </div>
+      <div class="metric-card mc-teal">
+        <div class="metric-icon">💰</div>
+        <div class="metric-label">Est. Revenue Today</div>
+        <div class="metric-val" style="background:var(--g5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:26px;font-weight:800">₹18.4 <span class="metric-unit" style="-webkit-text-fill-color:var(--text2)">L</span></div>
+        <div class="metric-delta delta-up">▲ +₹1.2L vs avg</div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Weekly Production Trend</div>
+        <div class="chart-sub">KLPD · Last 7 days vs target (90 KLPD)</div>
+        <div class="chart-wrap"><canvas id="prodChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Yield Efficiency</div>
+        <div class="chart-sub">Ethanol yield % per batch · Rolling 7 days</div>
+        <div class="chart-wrap"><canvas id="yieldChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- EQUIPMENT HEALTH -->
+    <div class="sec-label">Equipment Health — IoT Sensor Feed</div>
+    <div class="eq-grid">
+
+      <div class="eq-card">
+        <div class="eq-header">
+          <div class="eq-name">Fermenters F-01 to F-04</div>
+          <span class="eq-tag tag-ok">Nominal</span>
+        </div>
+        <div class="eq-bars">
+          <div class="eq-bar-row"><span class="eq-bar-label">Temp (°C)</span><div class="eq-bar-track"><div class="eq-bar-fill fill-g" style="width:66%"></div></div><span class="eq-bar-val" style="color:var(--green)">31.8°</span></div>
+          <div class="eq-bar-row"><span class="eq-bar-label">pH level</span><div class="eq-bar-track"><div class="eq-bar-fill fill-g" style="width:72%"></div></div><span class="eq-bar-val" style="color:var(--green)">4.9</span></div>
+          <div class="eq-bar-row"><span class="eq-bar-label">Brix</span><div class="eq-bar-track"><div class="eq-bar-fill fill-b" style="width:58%"></div></div><span class="eq-bar-val" style="color:var(--blue)">14.2</span></div>
+        </div>
+      </div>
+
+      <div class="eq-card">
+        <div class="eq-header">
+          <div class="eq-name">Distillation Column</div>
+          <span class="eq-tag tag-ok">Running</span>
+        </div>
+        <div class="eq-bars">
+          <div class="eq-bar-row"><span class="eq-bar-label">Steam (kg/cm²)</span><div class="eq-bar-track"><div class="eq-bar-fill fill-g" style="width:84%"></div></div><span class="eq-bar-val" style="color:var(--green)">4.2</span></div>
+          <div class="eq-bar-row"><span class="eq-bar-label">Reflux ratio</span><div class="eq-bar-track"><div class="eq-bar-fill fill-b" style="width:62%"></div></div><span class="eq-bar-val" style="color:var(--blue)">3.1</span></div>
+          <div class="eq-bar-row"><span class="eq-bar-label">Temp top (°C)</span><div class="eq-bar-track"><div class="eq-bar-fill fill-g" style="width:78%"></div></div><span class="eq-bar-val" style="color:var(--green)">78.4°</span></div>
+        </div>
+      </div>
+
+      <div class="eq-card">
+        <div class="eq-header">
+          <div class="eq-name">Boiler (Steam Gen.)</div>
+          <span class="eq-tag tag-warn">PM Due</span>
+        </div>
+        <div class="eq-bars">
+          <div class="eq-bar-row"><span class="eq-bar-label">Pressure</span><div class="eq-bar-track"><div class="eq-bar-fill fill-a" style="width:86%"></div></div><span class="eq-bar-val" style="color:var(--amber)">8.6</span></div>
+          <div class="eq-bar-row"><span class="eq-bar-label">Efficiency %</span><div class="eq-bar-track"><div class="eq-bar-fill fill-a" style="width:87%"></div></div><span class="eq-bar-val" style="color:var(--amber)">87%</span></div>
+          <div class="eq-bar-row"><span class="eq-bar-label">PM in days</span><div class="eq-bar-track"><div class="eq-bar-fill fill-r" style="width:20%"></div></div><span class="eq-bar-val" style="color:var(--red)">3d</span></div>
+        </div>
+      </div>
+
+      <div class="eq-card">
+        <div class="eq-header">
+          <div class="eq-name">CO₂ Scrubber</div>
+          <span class="eq-tag tag-ok">Capturing</span>
+        </div>
+        <div class="eq-bars">
+          <div class="eq-bar-row"><span class="eq-bar-label">Flow (kg/hr)</span><div class="eq-bar-track"><div class="eq-bar-fill fill-b" style="width:84%"></div></div><span class="eq-bar-val" style="color:var(--blue)">420</span></div>
+          <div class="eq-bar-row"><span class="eq-bar-label">Purity %</span><div class="eq-bar-track"><div class="eq-bar-fill fill-g" style="width:99%"></div></div><span class="eq-bar-val" style="color:var(--green)">99.1%</span></div>
+          <div class="eq-bar-row"><span class="eq-bar-label">Recovery %</span><div class="eq-bar-track"><div class="eq-bar-fill fill-g" style="width:83%"></div></div><span class="eq-bar-val" style="color:var(--green)">83%</span></div>
+        </div>
+      </div>
+
+      <div class="eq-card">
+        <div class="eq-header">
+          <div class="eq-name">Centrifuge (DDGS)</div>
+          <span class="eq-tag tag-ok">Operational</span>
+        </div>
+        <div class="eq-bars">
+          <div class="eq-bar-row"><span class="eq-bar-label">Vibration</span><div class="eq-bar-track"><div class="eq-bar-fill fill-g" style="width:42%"></div></div><span class="eq-bar-val" style="color:var(--green)">2.1</span></div>
+          <div class="eq-bar-row"><span class="eq-bar-label">Bearing °C</span><div class="eq-bar-track"><div class="eq-bar-fill fill-g" style="width:48%"></div></div><span class="eq-bar-val" style="color:var(--green)">48°</span></div>
+          <div class="eq-bar-row"><span class="eq-bar-label">Speed RPM</span><div class="eq-bar-track"><div class="eq-bar-fill fill-b" style="width:76%"></div></div><span class="eq-bar-val" style="color:var(--blue)">2850</span></div>
+        </div>
+      </div>
+
+      <div class="eq-card">
+        <div class="eq-header">
+          <div class="eq-name">ETP (Effluent)</div>
+          <span class="eq-tag tag-warn">Watch</span>
+        </div>
+        <div class="eq-bars">
+          <div class="eq-bar-row"><span class="eq-bar-label">COD mg/L</span><div class="eq-bar-track"><div class="eq-bar-fill fill-a" style="width:82%"></div></div><span class="eq-bar-val" style="color:var(--amber)">2460</span></div>
+          <div class="eq-bar-row"><span class="eq-bar-label">pH</span><div class="eq-bar-track"><div class="eq-bar-fill fill-g" style="width:70%"></div></div><span class="eq-bar-val" style="color:var(--green)">7.2</span></div>
+          <div class="eq-bar-row"><span class="eq-bar-label">% of limit</span><div class="eq-bar-track"><div class="eq-bar-fill fill-a" style="width:82%"></div></div><span class="eq-bar-val" style="color:var(--amber)">82%</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BY-PRODUCTS -->
+    <div class="sec-label">By-product Management</div>
+    <div class="byp-row">
+      <div class="byp-card byp-co2">
+        <div class="byp-icon">☁️</div>
+        <div class="byp-name">CO₂ Capture</div>
+        <div class="byp-stat-row"><span class="byp-stat-label">Today captured</span><span class="byp-stat-val" style="color:var(--blue)">10.1 MT</span></div>
+        <div class="byp-stat-row"><span class="byp-stat-label">Sold to buyer</span><span class="byp-stat-val" style="color:var(--green)">8.4 MT</span></div>
+        <div class="byp-stat-row"><span class="byp-stat-label">Recovery rate</span><span class="byp-stat-val" style="color:var(--green)">83%</span></div>
+        <div class="byp-stat-row"><span class="byp-stat-label">Target</span><span class="byp-stat-val" style="color:var(--text2)">≥ 80%</span></div>
+      </div>
+      <div class="byp-card byp-ddgs">
+        <div class="byp-icon">🌽</div>
+        <div class="byp-name">DDGS Animal Feed</div>
+        <div class="byp-stat-row"><span class="byp-stat-label">Today production</span><span class="byp-stat-val" style="color:var(--amber)">18.4 MT</span></div>
+        <div class="byp-stat-row"><span class="byp-stat-label">In yard (stock)</span><span class="byp-stat-val" style="color:var(--amber)">42 MT</span></div>
+        <div class="byp-stat-row"><span class="byp-stat-label">Next dispatch</span><span class="byp-stat-val" style="color:var(--amber)">Tomorrow 9am</span></div>
+        <div class="byp-stat-row"><span class="byp-stat-label">Yard capacity</span><span class="byp-stat-val" style="color:var(--text2)">55% full</span></div>
+      </div>
+    </div>
+
+    <!-- TASK TRACKER -->
+    <div class="sec-label">Daily Task Tracker — Auto-Status from SCADA + Task System</div>
+    <div class="tracker-wrap">
+      <div class="tracker-head"><div>Task</div><div>Department</div><div>Due</div><div>Status</div></div>
+      <div class="tracker-row"><div class="task-name">Morning SCADA review</div><div class="task-dept">Operations</div><div class="task-time">07:30</div><div><span class="tstat s-done">Done</span></div></div>
+      <div class="tracker-row"><div class="task-name">Lab fermentation samples</div><div class="task-dept">QA / Lab</div><div class="task-time">08:00</div><div><span class="tstat s-done">Done</span></div></div>
+      <div class="tracker-row"><div class="task-name">Feedstock PO for next week</div><div class="task-dept">Procurement</div><div class="task-time">10:00</div><div><span class="tstat s-done">Done</span></div></div>
+      <div class="tracker-row"><div class="task-name">GC purity test (finished lot)</div><div class="task-dept">QA / Lab</div><div class="task-time">11:00</div><div><span class="tstat s-done">Done</span></div></div>
+      <div class="tracker-row"><div class="task-name">Boiler PM inspection</div><div class="task-dept">Maintenance</div><div class="task-time">14:00</div><div><span class="tstat s-pend">Pending</span></div></div>
+      <div class="tracker-row"><div class="task-name">DDGS dispatch coordination</div><div class="task-dept">Procurement</div><div class="task-time">16:00</div><div><span class="tstat s-pend">Pending</span></div></div>
+      <div class="tracker-row"><div class="task-name">ETP COD sample to lab</div><div class="task-dept">QA / Lab</div><div class="task-time">13:00</div><div><span class="tstat s-over">Overdue</span></div></div>
+      <div class="tracker-row"><div class="task-name">MD dashboard auto-report</div><div class="task-dept">Data / IT</div><div class="task-time">17:00</div><div><span class="tstat s-pend">Pending</span></div></div>
+    </div>
+
+  </div>
+
+  <!-- ======= ORG CHART PANEL ======= -->
+  <div class="panel" id="panel-org">
+    <div class="sec-label">Organisation Structure · Ishtha Ethanol Plant</div>
+    <div class="org-container">
+      <div class="org-tree">
+
+        <!-- MD -->
+        <div class="org-row">
+          <div class="org-box ob-md">
+            <div class="org-name">Managing Director</div>
+            <div class="org-sub">Sparrow · Ishtha</div>
+            <span class="org-badge badge-you">You</span>
+          </div>
+        </div>
+        <div class="org-connector"></div>
+
+        <!-- L1 -->
+        <div class="org-row">
+          <div class="org-box ob-ops">
+            <div class="org-name">Plant Head</div>
+            <div class="org-sub">DGM Operations</div>
+            <span class="org-badge badge-ops">Operations</span>
+          </div>
+          <div class="org-box ob-fin">
+            <div class="org-name">CFO</div>
+            <div class="org-sub">Finance Co-founder</div>
+            <span class="org-badge badge-fin">Finance</span>
+          </div>
+          <div class="org-box ob-adm">
+            <div class="org-name">HR & Admin</div>
+            <div class="org-sub">Manager</div>
+            <span class="org-badge badge-adm">Admin</span>
+          </div>
+        </div>
+        <div class="org-connector"></div>
+
+        <!-- L2 -->
+        <div class="org-row">
+          <div class="org-box ob-ops">
+            <div class="org-name">Sr. Process Engineer</div>
+            <div class="org-sub">Fermentation & Distillation</div>
+          </div>
+          <div class="org-box ob-eng">
+            <div class="org-name">Maintenance Engineer</div>
+            <div class="org-sub">Mechanical & Electrical</div>
+          </div>
+          <div class="org-box ob-fin">
+            <div class="org-name">Procurement Manager</div>
+            <div class="org-sub">Feedstock & Inventory</div>
+          </div>
+          <div class="org-box ob-adm">
+            <div class="org-name">QA/QC Manager</div>
+            <div class="org-sub">Lab & Compliance</div>
+          </div>
+          <div class="org-box ob-ops">
+            <div class="org-name">Data Analyst</div>
+            <div class="org-sub">SCADA & IT</div>
+          </div>
+        </div>
+        <div class="org-connector"></div>
+
+        <!-- L3 -->
+        <div class="org-row">
+          <div class="org-box ob-l3">
+            <div class="org-name">Shift Supervisors</div>
+            <div class="org-sub">×3 (A/B/C rotating)</div>
+          </div>
+          <div class="org-box ob-l3">
+            <div class="org-name">Lab Chemists</div>
+            <div class="org-sub">×2</div>
+          </div>
+          <div class="org-box ob-l3">
+            <div class="org-name">Maintenance Techs</div>
+            <div class="org-sub">×4–6</div>
+          </div>
+          <div class="org-box ob-l3">
+            <div class="org-name">Plant Operators</div>
+            <div class="org-sub">×8–12</div>
+          </div>
+          <div class="org-box ob-l3">
+            <div class="org-name">Feedstock & Store</div>
+            <div class="org-sub">×3–4</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Headcount summary -->
+    <div class="charts-row" style="margin-top:24px">
+      <div class="chart-card">
+        <div class="chart-title">Headcount by Department</div>
+        <div class="chart-sub">Full operational team · post financial closure</div>
+        <div class="chart-wrap"><canvas id="headChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Hiring Phase Timeline</div>
+        <div class="chart-sub">Team build-up across company lifecycle stages</div>
+        <div class="chart-wrap"><canvas id="phaseChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= SOP PANEL ======= -->
+  <div class="panel" id="panel-sop">
+    <div class="sec-label">Role-specific daily SOPs — click department to expand</div>
+
+    <!-- OPERATIONS -->
+    <div class="sop-dept">
+      <div class="dept-hdr" onclick="toggleDept('ops',this)">
+        <div class="dept-dot" style="background:#4fc3f7"></div>
+        <div class="dept-label">Operations & Production</div>
+        <div class="dept-count">4 roles</div>
+        <div class="dept-arrow open">▼</div>
+      </div>
+      <div class="dept-body open" id="dept-ops">
+        <div class="role-card">
+          <div class="role-hdr" onclick="toggleRole('ph',this)">
+            <div class="role-dot" style="background:#4fc3f7"></div>
+            <div class="role-name">Plant Head / DGM Operations</div><span style="font-size:12px;color:var(--text3)">▼</span>
+          </div>
+          <div class="role-body" id="role-ph">
+            <div class="kpi-row">
+              <div class="kpi-box"><div class="kpi-lbl">Primary KPI</div><div class="kpi-v">KLPD achieved</div></div>
+              <div class="kpi-box"><div class="kpi-lbl">Daily Target</div><div class="kpi-v">≥ 95% capacity</div></div>
+            </div>
+            <ul class="task-list">
+              <li><span class="task-time">06:00</span>Review overnight shift report & SCADA trend summary before 7am stand-up</li>
+              <li><span class="task-time">07:00</span>Daily stand-up with Shift Supervisors, Process & Maintenance engineers (15 min max)</li>
+              <li><span class="task-time">08:00</span>Plant floor walk: fermenters, distillation column, effluent — safety & visual check</li>
+              <li><span class="task-time">10:00</span>Review lab analysis: fermentation efficiency, ethanol purity — flag deviations</li>
+              <li><span class="task-time">12:00</span>Sign daily production report; send MD WhatsApp summary (3 lines: output, issues, plan)</li>
+              <li><span class="task-time">14:00</span>Maintenance review: identify breakdown risk in next 24hrs and mitigate</li>
+              <li><span class="task-time">16:00</span>Procurement check: feedstock stock days confirmed; next 7-day plan approved</li>
+              <li><span class="task-time">17:00</span>Update dashboard: production vs target, by-product dispatch, pending tasks status</li>
+            </ul>
+          </div>
+        </div>
+        <div class="role-card">
+          <div class="role-hdr" onclick="toggleRole('pe',this)">
+            <div class="role-dot" style="background:#00d68f"></div>
+            <div class="role-name">Sr. Process Engineer — Fermentation & Distillation</div><span style="font-size:12px;color:var(--text3)">▼</span>
+          </div>
+          <div class="role-body" id="role-pe">
+            <div class="kpi-row">
+              <div class="kpi-box"><div class="kpi-lbl">KPI 1</div><div class="kpi-v">Ethanol yield %</div></div>
+              <div class="kpi-box"><div class="kpi-lbl">KPI 2</div><div class="kpi-v">ENA purity ≥ 99.5%</div></div>
+            </div>
+            <ul class="task-list">
+              <li><span class="task-time">06:30</span>Download SCADA trend logs: fermentation temp, pH, Brix readings for all batches</li>
+              <li><span class="task-time">07:30</span>Review batch-wise yield vs theoretical; flag if deviation &gt; 2%</li>
+              <li><span class="task-time">09:00</span>Check yeast health report from lab; adjust nutrient feed rate if required</li>
+              <li><span class="task-time">11:00</span>Distillation column inspection: reflux ratio, steam pressure, condensate temperature</li>
+              <li><span class="task-time">13:00</span>CO₂ capture system check: scrubber efficiency and gas flow meter reading</li>
+              <li><span class="task-time">15:00</span>Prepare fermentation batch rotation schedule for next 24 hours</li>
+              <li><span class="task-time">17:00</span>Submit daily process log to Plant Head with all deviation notes and corrective actions</li>
+            </ul>
+          </div>
+        </div>
+        <div class="role-card">
+          <div class="role-hdr" onclick="toggleRole('ss',this)">
+            <div class="role-dot" style="background:#4db6ac"></div>
+            <div class="role-name">Shift Supervisor ×3 (A/B/C — 8-hr rotating)</div><span style="font-size:12px;color:var(--text3)">▼</span>
+          </div>
+          <div class="role-body" id="role-ss">
+            <div class="kpi-row">
+              <div class="kpi-box"><div class="kpi-lbl">KPI</div><div class="kpi-v">Zero unplanned stops</div></div>
+              <div class="kpi-box"><div class="kpi-lbl">Output</div><div class="kpi-v">Shift handover report</div></div>
+            </div>
+            <ul class="task-list">
+              <li><span class="task-time">Start</span>Physical round of all sections; sign safety checklist before assuming charge</li>
+              <li><span class="task-time">Every 2h</span>Log flow meters, tank levels, fermenter status on paper log + SCADA entry</li>
+              <li><span class="task-time">Mid-shift</span>Supervise cleaning-in-place (CIP) procedure if scheduled for that shift</li>
+              <li><span class="task-time">End</span>Write handover report: output, incidents, pending tasks, equipment alerts for next shift</li>
+              <li><span class="task-time">Anytime</span>Report abnormal parameters immediately to Process Engineer via phone — no delays</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAINTENANCE -->
+    <div class="sop-dept">
+      <div class="dept-hdr" onclick="toggleDept('mnt',this)">
+        <div class="dept-dot" style="background:#ff5252"></div>
+        <div class="dept-label">Maintenance</div>
+        <div class="dept-count">2 roles</div>
+        <div class="dept-arrow">▼</div>
+      </div>
+      <div class="dept-body" id="dept-mnt">
+        <div class="role-card">
+          <div class="role-hdr" onclick="toggleRole('me',this)">
+            <div class="role-dot" style="background:#ff5252"></div>
+            <div class="role-name">Maintenance Engineer</div><span style="font-size:12px;color:var(--text3)">▼</span>
+          </div>
+          <div class="role-body" id="role-me">
+            <div class="kpi-row">
+              <div class="kpi-box"><div class="kpi-lbl">KPI</div><div class="kpi-v">Downtime &lt; 1%/mo</div></div>
+              <div class="kpi-box"><div class="kpi-lbl">Output</div><div class="kpi-v">PM checklist signed daily</div></div>
+            </div>
+            <ul class="task-list">
+              <li><span class="task-time">07:00</span>Check IoT vibration & temp alerts from compressors, pumps, motors via CMMS app</li>
+              <li><span class="task-time">08:00</span>Execute planned preventive maintenance (PM) tasks per approved weekly schedule</li>
+              <li><span class="task-time">10:00</span>Verify critical spares inventory: impellers, gaskets, belts, mechanical seals</li>
+              <li><span class="task-time">14:00</span>Boiler operation inspection: pressure, water treatment, blowdown log verification</li>
+              <li><span class="task-time">16:00</span>Review pending work orders; prioritise next-day maintenance tasks with Plant Head</li>
+              <li><span class="task-time">17:30</span>Update CMMS (UpKeep/eMaint) with completed work records and parts consumed</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QA -->
+    <div class="sop-dept">
+      <div class="dept-hdr" onclick="toggleDept('qa',this)">
+        <div class="dept-dot" style="background:#b39ddb"></div>
+        <div class="dept-label">Quality Assurance & Laboratory</div>
+        <div class="dept-count">2 roles</div>
+        <div class="dept-arrow">▼</div>
+      </div>
+      <div class="dept-body" id="dept-qa">
+        <div class="role-card">
+          <div class="role-hdr" onclick="toggleRole('qa',this)">
+            <div class="role-dot" style="background:#b39ddb"></div>
+            <div class="role-name">QA/QC Manager</div><span style="font-size:12px;color:var(--text3)">▼</span>
+          </div>
+          <div class="role-body" id="role-qa">
+            <div class="kpi-row">
+              <div class="kpi-box"><div class="kpi-lbl">KPI</div><div class="kpi-v">Zero batch rejections</div></div>
+              <div class="kpi-box"><div class="kpi-lbl">Output</div><div class="kpi-v">COA per dispatch lot</div></div>
+            </div>
+            <ul class="task-list">
+              <li><span class="task-time">07:00</span>Collect fermentation samples (every 4hrs cycle); test pH, Brix, yeast count</li>
+              <li><span class="task-time">09:00</span>GC ethanol purity test on previous day's production batch — report within 2 hours</li>
+              <li><span class="task-time">11:00</span>DDGS moisture & protein analysis; approve or hold for dispatch based on spec</li>
+              <li><span class="task-time">13:00</span>Effluent sample: COD, BOD, pH — log against GPCB consent limits (critical compliance)</li>
+              <li><span class="task-time">15:00</span>Issue Certificate of Analysis (COA) for all finished ethanol lots cleared for dispatch</li>
+              <li><span class="task-time">17:00</span>Update quality register; flag any parameter approaching limit to Plant Head immediately</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROCUREMENT -->
+    <div class="sop-dept">
+      <div class="dept-hdr" onclick="toggleDept('proc',this)">
+        <div class="dept-dot" style="background:#f6b93b"></div>
+        <div class="dept-label">Procurement & Supply Chain</div>
+        <div class="dept-count">2 roles</div>
+        <div class="dept-arrow">▼</div>
+      </div>
+      <div class="dept-body" id="dept-proc">
+        <div class="role-card">
+          <div class="role-hdr" onclick="toggleRole('pm',this)">
+            <div class="role-dot" style="background:#f6b93b"></div>
+            <div class="role-name">Procurement Manager</div><span style="font-size:12px;color:var(--text3)">▼</span>
+          </div>
+          <div class="role-body" id="role-pm">
+            <div class="kpi-row">
+              <div class="kpi-box"><div class="kpi-lbl">KPI 1</div><div class="kpi-v">Stock &gt; 7 days always</div></div>
+              <div class="kpi-box"><div class="kpi-lbl">KPI 2</div><div class="kpi-v">Price vs benchmark</div></div>
+            </div>
+            <ul class="task-list">
+              <li><span class="task-time">08:00</span>Check silo grain levels; calculate days-of-stock at current plant run rate</li>
+              <li><span class="task-time">09:00</span>Review mandi prices (maize/broken rice) from APMC portals; update price tracker</li>
+              <li><span class="task-time">10:00</span>Confirm pending grain deliveries with suppliers; raise POs for following week's requirement</li>
+              <li><span class="task-time">13:00</span>Coordinate with store: chemical inventory check — enzymes, yeast, H₂SO₄, caustic soda</li>
+              <li><span class="task-time">16:00</span>Dispatch planning: DDGS truck coordination with buyer; ethanol tanker schedule confirmed</li>
+              <li><span class="task-time">17:30</span>Update daily inventory dashboard: grain received, consumed today, and closing balance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA ANALYST -->
+    <div class="sop-dept">
+      <div class="dept-hdr" onclick="toggleDept('da',this)">
+        <div class="dept-dot" style="background:#00d68f"></div>
+        <div class="dept-label">Data Analyst & IT</div>
+        <div class="dept-count">1 role</div>
+        <div class="dept-arrow">▼</div>
+      </div>
+      <div class="dept-body" id="dept-da">
+        <div class="role-card">
+          <div class="role-hdr" onclick="toggleRole('da',this)">
+            <div class="role-dot" style="background:#00d68f"></div>
+            <div class="role-name">Data Analyst / IT Manager</div><span style="font-size:12px;color:var(--text3)">▼</span>
+          </div>
+          <div class="role-body" id="role-da">
+            <div class="kpi-row">
+              <div class="kpi-box"><div class="kpi-lbl">KPI 1</div><div class="kpi-v">Dashboard uptime 99%</div></div>
+              <div class="kpi-box"><div class="kpi-lbl">KPI 2</div><div class="kpi-v">MD report auto-sent daily</div></div>
+            </div>
+            <ul class="task-list">
+              <li><span class="task-time">07:30</span>Verify SCADA data pipeline: all sensors reporting live, zero null values in historian</li>
+              <li><span class="task-time">08:00</span>Generate and QC daily production report — cross-check auto vs manual meter readings</li>
+              <li><span class="task-time">09:00</span>Auto-send dashboard summary to MD email + WhatsApp (script-triggered via Twilio)</li>
+              <li><span class="task-time">11:00</span>Trend analysis: yield efficiency, energy per KL vs rolling 7-day moving average</li>
+              <li><span class="task-time">14:00</span>IoT maintenance review: flag equipment with abnormal vibration or temperature patterns</li>
+              <li><span class="task-time">16:00</span>Update task tracker: mark completed, escalate pending items past their deadline to HOD</li>
+              <li><span class="task-time">17:00</span>Weekly: build full MD board report (production, financials, quality, compliance summary)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= TECH STACK PANEL ======= -->
+  <div class="panel" id="panel-tech">
+    <div class="sec-label">Technology stack — SCADA · IoT · AI Dashboard</div>
+
+    <div class="tech-grid">
+      <div class="tech-card tc-scada">
+        <div class="tech-icon-wrap tw-blue">⚙️</div>
+        <div class="tech-name">SCADA — Ignition by Inductive Automation</div>
+        <div class="tech-desc">PLC-connected sensors across fermenters, distillation, utilities. Real-time tag logging every 60 sec. Historian DB stores 2 years of process data. Web-based — MD can view from phone anywhere. India-licensed. Preferred over Wonderware for cost & flexibility.</div>
+        <span class="tech-tag">₹2–4L one-time setup</span>
+      </div>
+      <div class="tech-card tc-iot">
+        <div class="tech-icon-wrap tw-green">📡</div>
+        <div class="tech-name">IoT Sensor Layer — Endress+Hauser / Yokogawa</div>
+        <div class="tech-desc">Vibration transmitters on all rotating equipment (pumps, compressors, centrifuges). Temperature RTDs in fermenters & distillation columns. Ultrasonic level sensors in silos. Coriolis flow meters on ethanol output line. Protocol: Modbus TCP → OPC-UA → SCADA.</div>
+        <span class="tech-tag">Critical instruments: E+H or Yokogawa</span>
+      </div>
+      <div class="tech-card tc-ai">
+        <div class="tech-icon-wrap tw-amber">📊</div>
+        <div class="tech-name">AI Dashboard — Power BI + Python ML Pipeline</div>
+        <div class="tech-desc">Power BI pulls from SCADA Historian via API. Python script for anomaly detection — flags abnormal equipment patterns 4–6 hrs before failure. Auto-report PDF generated at 5pm, sent to MD via email + Twilio WhatsApp. Cloud mirror: AWS IoT Core or Azure IoT Hub.</div>
+        <span class="tech-tag">Power BI Pro: ₹800/user/mo</span>
+      </div>
+      <div class="tech-card tc-task">
+        <div class="tech-icon-wrap tw-purple">✅</div>
+        <div class="tech-name">Task Tracker — Zoho Projects + Zapier</div>
+        <div class="tech-desc">Daily checklists auto-created at 6am via Zoho Cliq automation. SCADA-triggered tasks auto-complete when sensor confirms action. Overdue tasks trigger WhatsApp alert to HOD + MD via Zapier webhook. Integrates with all department SOPs in this playbook.</div>
+        <span class="tech-tag">~₹2,000/month total</span>
+      </div>
+      <div class="tech-card tc-cmms">
+        <div class="tech-icon-wrap tw-red">🔧</div>
+        <div class="tech-name">CMMS — UpKeep or eMaint</div>
+        <div class="tech-desc">Maintenance work orders, PM schedules, spare parts inventory. IoT vibration alerts auto-create work orders when threshold exceeded. Maintenance Techs close orders on mobile app. MD sees equipment health in Power BI dashboard. Full audit trail for insurance & compliance.</div>
+        <span class="tech-tag">UpKeep Starter: Free tier available</span>
+      </div>
+    </div>
+
+    <!-- MD AUTO REPORT -->
+    <div class="sec-label">Sample MD Auto-Report (WhatsApp + Email — 5:30pm daily)</div>
+    <div class="md-report">
+      <span class="rb">📊 ISHTHA DAILY REPORT — 25 Jun 2026</span><br>
+      <span class="rg">✅ Production: 72.4 KL (82% capacity utilisation)</span><br>
+      <span class="rg">✅ Ethanol purity: 99.7% ENA grade — within spec</span><br>
+      <span class="rg">✅ DDGS dispatched: 18 MT (₹1.26L by-product revenue)</span><br>
+      <span class="rg">✅ CO₂ captured & sold: 8.4 MT — recovery 83%</span><br>
+      <span class="ra">⚠️  Boiler PM due in 3 days — schedule confirmed with Maintenance Eng</span><br>
+      <span style="color:var(--red)">🔴 ETP COD sample OVERDUE (13:00) — QA Manager alerted via WhatsApp</span><br>
+      <span class="ra">⚠️  Capacity utilisation 82% — 8% below target, Process Eng reviewing</span><br>
+      <span class="rg">📦 Feedstock stock: 9.2 days — reorder PO raised ✓</span><br>
+      <span class="rb">💰 Today's ethanol revenue estimate: ₹18.4 Lakhs</span><br>
+      <span style="color:var(--text3)">— Sent by Ishtha AutoReport v1.0 · Powered by SCADA + Power BI</span>
+    </div>
+
+    <!-- Stack chart -->
+    <div style="margin-top:24px">
+      <div class="chart-card">
+        <div class="chart-title">Monthly Tech Stack Cost Breakdown</div>
+        <div class="chart-sub">Total operational software cost vs value generated</div>
+        <div class="chart-wrap"><canvas id="costChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<script>
+// --- TABS ---
+function showTab(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='org' && !window._headChartDone) initOrgCharts();
+  if(id==='tech' && !window._costChartDone) initCostChart();
+}
+
+// --- DEPT TOGGLE ---
+function toggleDept(id,hdr){
+  const body=document.getElementById('dept-'+id);
+  const arrow=hdr.querySelector('.dept-arrow');
+  const open=body.classList.toggle('open');
+  arrow.classList.toggle('open',open);
+}
+
+// --- ROLE TOGGLE ---
+function toggleRole(id,hdr){
+  const body=document.getElementById('role-'+id);
+  const arrow=hdr.querySelector('span:last-child');
+  const open=body.classList.toggle('open');
+  if(arrow) arrow.textContent=open?'▲':'▼';
+}
+
+// --- CHART DEFAULTS ---
+const chartDefaults={
+  responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(15,21,38,0.95)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#e8eaf0',bodyColor:'#8892a4',padding:10,cornerRadius:8}},
+  scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#4a5568',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#4a5568',font:{size:11}}}}
+};
+
+// --- PRODUCTION CHART ---
+(function(){
+  const ctx=document.getElementById('prodChart').getContext('2d');
+  const grad=ctx.createLinearGradient(0,0,0,180);
+  grad.addColorStop(0,'rgba(0,214,143,0.25)');
+  grad.addColorStop(1,'rgba(0,214,143,0.02)');
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets:[
+        {label:'Actual KLPD',data:[68,71,70.2,73.5,72.4,74.1,72.4],borderColor:'#00d68f',backgroundColor:grad,borderWidth:2,fill:true,tension:0.4,pointBackgroundColor:'#00d68f',pointRadius:4,pointHoverRadius:6},
+        {label:'Target',data:[90,90,90,90,90,90,90],borderColor:'rgba(246,185,59,0.4)',borderDash:[4,4],borderWidth:1.5,fill:false,tension:0,pointRadius:0}
+      ]
+    },
+    options:{...chartDefaults,plugins:{...chartDefaults.plugins,legend:{display:true,labels:{color:'#8892a4',font:{size:11},boxWidth:12}}}}
+  });
+})();
+
+// --- YIELD CHART ---
+(function(){
+  const ctx=document.getElementById('yieldChart').getContext('2d');
+  const grad=ctx.createLinearGradient(0,0,0,180);
+  grad.addColorStop(0,'rgba(79,195,247,0.2)');
+  grad.addColorStop(1,'rgba(79,195,247,0.02)');
+  new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['B-01','B-02','B-03','B-04','B-05','B-06','B-07'],
+      datasets:[{label:'Yield %',data:[91.2,92.5,90.8,93.1,91.8,92.0,91.5],backgroundColor:['rgba(0,214,143,0.7)','rgba(0,214,143,0.7)','rgba(246,185,59,0.7)','rgba(0,214,143,0.7)','rgba(0,214,143,0.7)','rgba(0,214,143,0.7)','rgba(0,214,143,0.7)'],borderColor:'transparent',borderRadius:6,borderSkipped:false}]},
+    options:{...chartDefaults,scales:{...chartDefaults.scales,y:{...chartDefaults.scales.y,min:88,max:95,ticks:{color:'#4a5568',font:{size:11}}}}}
+  });
+})();
+
+// --- ORG CHARTS (lazy) ---
+function initOrgCharts(){
+  window._headChartDone=true;
+  // Headcount donut
+  const ctx1=document.getElementById('headChart').getContext('2d');
+  new Chart(ctx1,{
+    type:'doughnut',
+    data:{
+      labels:['Plant Operators','Maintenance Techs','Shift Supervisors','Lab Chemists','Managers & Engineers','Admin & Others'],
+      datasets:[{data:[12,6,3,2,8,5],backgroundColor:['rgba(0,214,143,0.8)','rgba(255,82,82,0.8)','rgba(79,195,247,0.8)','rgba(179,157,219,0.8)','rgba(246,185,59,0.8)','rgba(77,182,172,0.8)'],borderColor:'rgba(0,0,0,0.3)',borderWidth:2,hoverOffset:6}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:true,position:'right',labels:{color:'#8892a4',font:{size:10},boxWidth:10,padding:8}},tooltip:{backgroundColor:'rgba(15,21,38,0.95)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#e8eaf0',bodyColor:'#8892a4',padding:10,cornerRadius:8}}}
+  });
+  // Phase chart
+  const ctx2=document.getElementById('phaseChart').getContext('2d');
+  new Chart(ctx2,{
+    type:'bar',
+    data:{
+      labels:['Now\n(Seed)','Pre-\nClosure','Financial\nClosure','Construction','Operations','Scale'],
+      datasets:[{label:'Team size',data:[6,12,25,60,100,150],backgroundColor:['rgba(0,214,143,0.3)','rgba(0,214,143,0.4)','rgba(0,214,143,0.55)','rgba(0,214,143,0.7)','rgba(0,214,143,0.85)','rgba(0,214,143,1)'],borderColor:'transparent',borderRadius:6,borderSkipped:false}]
+    },
+    options:{...chartDefaults,plugins:{...chartDefaults.plugins,legend:{display:false}}}
+  });
+}
+
+// --- COST CHART (lazy) ---
+function initCostChart(){
+  window._costChartDone=true;
+  const ctx=document.getElementById('costChart').getContext('2d');
+  new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['SCADA\n(Ignition)','Power BI\nPro','Zoho\nProjects','CMMS\n(UpKeep)','IoT Cloud\n(AWS)','Twilio\n(WhatsApp)'],
+      datasets:[{label:'₹/month',data:[8000,4000,2000,0,3500,1500],backgroundColor:['rgba(79,195,247,0.7)','rgba(0,214,143,0.7)','rgba(179,157,219,0.7)','rgba(246,185,59,0.7)','rgba(255,82,82,0.7)','rgba(77,182,172,0.7)'],borderColor:'transparent',borderRadius:6,borderSkipped:false}]
+    },
+    options:{...chartDefaults,plugins:{...chartDefaults.plugins,tooltip:{...chartDefaults.plugins.tooltip,callbacks:{label:d=>'₹'+d.raw.toLocaleString('en-IN')+'/mo'}}},scales:{...chartDefaults.scales,y:{...chartDefaults.scales.y,ticks:{callback:v=>'₹'+v.toLocaleString('en-IN'),color:'#4a5568',font:{size:11}}}}}
+  });
+}
+</script>
+</body>
+</html>
